@@ -8,10 +8,10 @@ from sklearn.model_selection import train_test_split, cross_val_score
 
 df = pd.read_csv("Data/train.csv")
 
-# แบ่ง train/test ก่อนเลย — ทำอันนี้เป็นอย่างแรกเสมอ
+
 train_df, test_df = train_test_split(df, test_size=0.2, random_state=42)
 
-# เลือก features ที่ดีจาก Day 5
+
 FEATURES = ['OverallQual', 'GrLivArea', 'GarageCars',
             'TotalBsmtSF', 'FullBath', 'YearBuilt',
             'LotArea', 'MasVnrArea']
@@ -20,7 +20,7 @@ X_train = train_df[FEATURES]
 y_train = train_df[TARGET]
 X_test = test_df[FEATURES]
 y_test = test_df[TARGET]
-#สร้าง pipeline 
+
 pipe = Pipeline([
     ('imputer', SimpleImputer(strategy='median')),
     ('scaler',  StandardScaler()),
@@ -31,7 +31,7 @@ pipe = Pipeline([
 ])
 
 
-# fit — imputer และ scaler เรียนจาก train เท่านั้น
+
 pipe.fit(X_train,y_train)
 
 # วัดผล
