@@ -31,7 +31,7 @@ class eda_pipeline:
     def _preprocess(self, df):
         df = df.copy()
 
-        # เติมค่าหาย
+       
         none_cols = ['PoolQC', 'MiscFeature', 'Alley',
                      'Fence', 'FireplaceQu', 'GarageType',
                      'GarageFinish', 'GarageQual', 'GarageCond',
@@ -56,7 +56,7 @@ class eda_pipeline:
             df['LotFrontage'] = df.groupby('Neighborhood')['LotFrontage']\
                 .transform(lambda x: x.fillna(x.median()))
             
-        # แปลงคุณภาพเป็นตัวเลข
+      
         quality_map = {"None": 0, "Po": 1, "Fa": 2, "TA": 3, "Gd": 4, "Ex": 5}
         for col in ['ExterQual', 'KitchenQual', 'BsmtQual', 'FireplaceQu']:
             if col in df.columns:
@@ -64,33 +64,32 @@ class eda_pipeline:
         return df
 
     def fit(self, df):
-        df_clean = self._preprocess(df)  # ทำความสะอาดก่อน
-        x = df_clean[self.FEATURES]  # เลือกเฉพาะ features ที่เราต้องการใช้ในการ train
-        y = df_clean[self.TARGET]  # เลือก target ที่เราต้องการทำนาย
-        self.model.fit(x, y)  # train model ด้วยข้อมูลที่เตรียมไว้
-        self.is_fitted = True  # เปลี่ยนสถานะว่า model ถูก train แล้ว
+        df_clean = self._preprocess(df)  
+        x = df_clean[self.FEATURES]  
+        y = df_clean[self.TARGET]  
+        self.model.fit(x, y)  
+        self.is_fitted = True 
 
-        preds = self.model.predict(x)  # ทำนายราคาบ้านด้วยข้อมูล train เพื่อประเมินผล
-        rmse = np.sqrt(((preds - y) ** 2).mean())  # คำนวณ RMSE เพื่อดูว่า model fit ขนาดไหน (ยิ่งน้อยยิ่งดี)
-        self.metrics['rmse'] = round(rmse, 2)  # เก็บ metric ไว้ใน dictionary เพื่อดูทีหลัง
+        preds = self.model.predict(x) 
+        rmse = np.sqrt(((preds - y) ** 2).mean())  
+        self.metrics['rmse'] = round(rmse, 2)  
         print(f"NaN in x: {x.isnull().sum().sum()}")
         print(x.isnull().sum()[x.isnull().sum() > 0])
-        return self  # คืนตัวเองเพื่อให้สามารถเรียก method อื่นๆ ต่อได้ เช่น .fit(df).predict(df_test)
+        return self  
     
     def predict(self, df):
         if not self.is_fitted:
             raise RuntimeError("Model is not fitted yet.")
-        df_clean = self._preprocess(df)  # ทำความสะอาดก่อนเสมอ
-        x = df_clean[self.FEATURES]  # เลือก features เดียวกับตอน train
-        return self.model.predict(x)  # คืน array ของราคาที่ทำนาย
+        df_clean = self._preprocess(df) 
+        x = df_clean[self.FEATURES] 
+        return self.model.predict(x) 
 
     def summary(self):
         print(f"Model  : {self.model_type}")
         print(f"Fitted : {self.is_fitted}")
         if self.metrics:
             print(f"RMSE   : ${self.metrics['rmse']:,.0f}")
-        # RMSE = 25000 แปลว่า "ทำนายผิดไปเฉลี่ย $25,000 ต่อหลัง"
-    
+      
     def __repr__(self):
         state = "fitted" if self.is_fitted else "not fitted"
         return f"HousePricePipeline(model={self.model_type}, {state})"
@@ -133,14 +132,14 @@ class eda_pipeline:
         search.fit(X,y)
         print(f"\n✓ Best params: {search.best_params_}")
         print(f"✓ Best RMSE  : ${-search.best_score_:,.0f}")
-      # อัพเดท model เป็นตัวที่ดีที่สุด
+      
         self.model = search.best_estimator_
         self.is_fitted = True
     
         return search.best_params_
 
 
-# ── รันจริง ──────────────────────────────
+
 df = pd.read_csv("Data/train.csv")
 train_df, test_df = train_test_split(df, test_size=0.2, random_state=42)
 
@@ -154,14 +153,14 @@ lr = eda_pipeline(model_type="linear")
 lr.fit(train_df)
 lr.summary()
 
-# ทำนายราคา
+
 preds = rf.predict(test_df)
 print(f"\nตัวอย่างราคาที่ทำนาย: {preds[:5]}")
 print("\n=== Test RMSE (ของจริง) ===")
 print(f"Random Forest : ${rf.evaluate(test_df):,.0f}")
 print(f"Linear        : ${lr.evaluate(test_df):,.0f}")
 
-# Tune
+
 print("\n=== Tuning Random Forest (GridSearch) ===")
 rf2 = eda_pipeline(model_type="forest")
 best_params = rf2.tune(train_df, cv=10)
