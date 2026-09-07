@@ -10,19 +10,15 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 
-# ────────────────────────────────
-# ตั้งค่าหน้า app
-# ────────────────────────────────
+
 st.set_page_config(
     page_title="House Price Predictor",
     page_icon= "🏠",
     layout="wide"
 )
 
-# ────────────────────────────────
-# โหลดและ train model
-# ────────────────────────────────
-@st.cache_resource # train แค่ครั้งเดียว ไม่ต้อง train ใหม่ทุกครั้งที่ user กด
+
+@st.cache_resource
 def load_model():
     df = pd.read_csv("Data/train.csv")
 
@@ -46,13 +42,11 @@ def load_model():
     return pipe, FEATURES
 pipe, FEATURES = load_model()
 
-# ────────────────────────────────
-# หน้า app
-# ────────────────────────────────
+
 st.title("🏠 House Price Predictor")
 st.markdown("ใส่ข้อมูลบ้านด้านซ้าย แล้วดูราคาที่ทำนายได้เลย")
 
-# Sidebar — รับ input
+
 st.sidebar.header("📋 ข้อมูลบ้าน")
 
 overall_qual = st.sidebar.slider(
@@ -79,16 +73,14 @@ lot_area = st.sidebar.number_input(
 mas_vnr_area = st.sidebar.number_input(
     "พื้นที่ผนังก่ออิฐ (ตร.ฟุต)", 0, 1500, 100)
 
-# สร้าง input array
+
 input_data = pd.DataFrame([[
     overall_qual, gr_liv_area, garage_cars,
     total_bsmt, full_bath, year_built,
     lot_area, mas_vnr_area
 ]], columns=FEATURES)
 
-# ────────────────────────────────
-# แสดงผล
-# ────────────────────────────────
+
 predicted_price = pipe.predict(input_data)[0]
 
 col1, col2, = st.columns(2)
@@ -103,7 +95,7 @@ with col1:
     st.dataframe(input_data)
 
 with col2:
-    # Feature Importance
+    
     st.subheader("Feature Importance")
     importances = pipe.named_steps['model'].feature_importances_
     feat_imp = pd.Series(importances, index=FEATURES).sort_values()
